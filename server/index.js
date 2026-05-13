@@ -3,6 +3,7 @@ const http = require('http');
 const { Server } = require('socket.io');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
@@ -29,11 +30,30 @@ app.set('io', io);
 app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:5173' }));
 app.use(express.json());
 
+// Rate limiter for auth routes — max 10 login attempts per 15 minutes per IP
+// Prevents brute-force password attacks
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10,
+  message: { message: 'Too many login attempts — please try again after 15 minutes' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// General API limiter — 100 requests per minute per IP
+const apiLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 100,
+  message: { message: 'Too many requests — please slow down' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // ── REST Routes ───────────────────────────────────────────────────────────────
-app.use('/api/auth', authRoutes);
-app.use('/api/orders', orderRoutes);
-app.use('/api/location', locationRoutes);
-app.use('/api/users', userRoutes);
+app.use('/api/auth', authLimiter, authRoutes);   // strict limit on login/register
+app.use('/api/orders', apiLimiter, orderRoutes);
+app.use('/api/location', apiLimiter, locationRoutes);
+app.use('/api/users', apiLimiter, userRoutes);
 
 // Health check
 app.get('/', (req, res) => res.json({ message: 'DeliverEase API is running' }));

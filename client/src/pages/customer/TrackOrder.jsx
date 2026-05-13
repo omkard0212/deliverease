@@ -131,6 +131,7 @@ export default function TrackOrder() {
               <MapView
                 deliveryAddress={order.deliveryAddress}
                 agentLocation={agentLocation}
+                orderStatus={order.status}
               />
             </div>
 
