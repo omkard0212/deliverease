@@ -6,7 +6,7 @@
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "env": {
-    "VITE_API_URL": "https://deliverease-wftz.onrender.com",
-    "VITE_SOCKET_URL": "https://deliverease-wftz.onrender.com"
+    "VITE_API_URL": "https://deliverease-uhbq.onrender.com",
+    "VITE_SOCKET_URL": "https://deliverease-uhbq.onrender.com"
   }
 }
