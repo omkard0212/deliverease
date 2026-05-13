@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
 
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'https://deliverease-wftz.onrender.com';
+
 /**
  * Custom hook that manages a Socket.IO connection.
  * - Connects on mount, disconnects on unmount (prevents memory leaks)
@@ -11,7 +13,7 @@ export function useSocket(trackingId = null) {
   const socketRef = useRef(null);
 
   useEffect(() => {
-    const socket = io(import.meta.env.VITE_SOCKET_URL, {
+    const socket = io(SOCKET_URL, {
       transports: ['websocket'],
     });
 
