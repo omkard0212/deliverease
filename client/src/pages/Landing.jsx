@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
-// ── Animated counter hook ─────────────────────────────────────────────────────
-function useCounter(target, duration = 1500) {
+// Animated counter
+function useCounter(target, duration = 1800) {
   const [count, setCount] = useState(0);
   useEffect(() => {
     let start = 0;
@@ -17,392 +17,250 @@ function useCounter(target, duration = 1500) {
   return count;
 }
 
-// ── Blinking cursor ───────────────────────────────────────────────────────────
-function Cursor() {
-  const [on, setOn] = useState(true);
-  useEffect(() => {
-    const t = setInterval(() => setOn(v => !v), 530);
-    return () => clearInterval(t);
-  }, []);
-  return <span className={on ? 'opacity-100' : 'opacity-0'}>█</span>;
-}
-
-// ── Typewriter ────────────────────────────────────────────────────────────────
-function Typewriter({ text, delay = 0 }) {
-  const [displayed, setDisplayed] = useState('');
-  useEffect(() => {
-    let i = 0;
-    const t = setTimeout(() => {
-      const interval = setInterval(() => {
-        setDisplayed(text.slice(0, i + 1));
-        i++;
-        if (i >= text.length) clearInterval(interval);
-      }, 38);
-      return () => clearInterval(interval);
-    }, delay);
-    return () => clearTimeout(t);
-  }, [text, delay]);
-  return <span>{displayed}</span>;
-}
-
-// ── Fake live feed ────────────────────────────────────────────────────────────
-const FEED_ITEMS = [
-  { id: 'DE-A8IKC9', status: 'IN_TRANSIT', city: 'Mumbai → Pune',    agent: 'Ravi Kumar' },
-  { id: 'DE-B3XKP2', status: 'PICKED_UP',  city: 'Delhi → Hyderabad', agent: 'Priya Sharma' },
-  { id: 'DE-C7MNQ1', status: 'DELIVERED',  city: 'Bangalore → Pune',  agent: 'Arjun Singh' },
-  { id: 'DE-D2WRT5', status: 'ASSIGNED',   city: 'Pune → Delhi',      agent: 'Ravi Kumar' },
-  { id: 'DE-E9LVS8', status: 'IN_TRANSIT', city: 'Hyderabad → Mumbai', agent: 'Priya Sharma' },
+const STEPS = [
+  { icon: '🛠️', title: 'Admin creates order',    desc: 'Admin places an order and assigns a delivery agent from the dashboard.' },
+  { icon: '📦', title: 'Agent picks up package', desc: 'Agent updates status and starts broadcasting live GPS location.' },
+  { icon: '🗺️', title: 'Customer tracks live',   desc: 'Customer watches the agent move on the map in real time.' },
+  { icon: '✅', title: 'Delivered',               desc: 'Status updates instantly and the customer is notified.' },
 ];
 
-const STATUS_COLOR = {
-  IN_TRANSIT: 'text-amber-400',
-  PICKED_UP:  'text-cyan-400',
-  DELIVERED:  'text-green-400',
-  ASSIGNED:   'text-orange-300',
-  PENDING:    'text-gray-500',
-};
+const FEATURES = [
+  { icon: '📡', title: 'Real-Time Location',   desc: 'Agent GPS broadcasts via Socket.IO every 5 seconds. Map marker moves as the agent moves — no refresh needed.' },
+  { icon: '🔐', title: 'Role-Based Auth',       desc: 'JWT authentication with 3 roles — customer, agent, admin. Protected routes and rate-limited login.' },
+  { icon: '🗺️', title: 'Interactive Map',       desc: 'Leaflet.js with OpenStreetMap tiles. Animated agent marker, delivery pin, and live ETA calculation.' },
+  { icon: '⚡', title: 'Instant Status Updates', desc: 'Status changes emit socket events. The customer timeline updates without any page interaction.' },
+  { icon: '🛠️', title: 'Admin Dashboard',       desc: 'Create orders, assign agents, monitor all deliveries in a live table with real-time stats.' },
+  { icon: '🧪', title: '73 Cypress Tests',      desc: 'End-to-end tests across all 3 roles, all API endpoints, and all user flows. 100% pass rate.' },
+];
 
 export default function Landing() {
-  const [activeRow, setActiveRow] = useState(0);
   const deliveries = useCounter(12847);
   const agents     = useCounter(340);
   const cities     = useCounter(28);
 
-  // Cycle active row in feed
-  useEffect(() => {
-    const t = setInterval(() => setActiveRow(r => (r + 1) % FEED_ITEMS.length), 1800);
-    return () => clearInterval(t);
-  }, []);
-
   return (
-    <div
-      className="min-h-screen text-amber-50 overflow-x-hidden"
-      style={{
-        background: '#0a0a0a',
-        fontFamily: "'Courier New', Courier, monospace",
-      }}
-    >
-      {/* ── Scanline overlay ───────────────────────────────────────────────── */}
-      <div
-        className="pointer-events-none fixed inset-0 z-50 opacity-[0.03]"
-        style={{
-          backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.8) 2px, rgba(255,255,255,0.8) 4px)',
-        }}
-      />
+    <div className="min-h-screen bg-gray-50 text-gray-800">
 
-      {/* ── Grid background ────────────────────────────────────────────────── */}
-      <div
-        className="pointer-events-none fixed inset-0 z-0 opacity-[0.04]"
-        style={{
-          backgroundImage: 'linear-gradient(rgba(251,191,36,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(251,191,36,0.6) 1px, transparent 1px)',
-          backgroundSize: '60px 60px',
-        }}
-      />
-
-      {/* ── Nav ────────────────────────────────────────────────────────────── */}
-      <nav className="relative z-10 border-b border-amber-900/40 px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+      {/* ── Navbar ─────────────────────────────────────────────────────────── */}
+      <nav className="bg-blue-600 text-white shadow-md sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+          <Link to="/" className="text-xl font-bold tracking-tight flex items-center gap-2">
+            <span className="text-2xl">📦</span>
+            DeliverEase
+          </Link>
           <div className="flex items-center gap-3">
-            <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-            <span className="text-amber-400 font-bold text-lg tracking-[0.2em] uppercase">
-              DeliverEase
-            </span>
-            <span className="text-amber-900 text-xs tracking-widest hidden sm:block">
-              // OPERATIONS CONTROL
-            </span>
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="text-amber-900 text-xs mr-4 hidden sm:block">
-              SYS_STATUS: <span className="text-green-400">ONLINE</span>
-            </span>
             <Link
               to="/login"
-              className="text-xs tracking-widest text-amber-500 hover:text-amber-300 border border-amber-900 hover:border-amber-600 px-4 py-2 transition-all uppercase"
+              className="text-sm font-medium hover:text-blue-200 transition-colors"
             >
-              Login
+              Sign In
             </Link>
             <Link
               to="/register"
-              className="text-xs tracking-widest text-black bg-amber-400 hover:bg-amber-300 px-4 py-2 ml-2 transition-all uppercase font-bold"
+              className="bg-white text-blue-600 text-sm font-semibold px-4 py-1.5 rounded-lg hover:bg-blue-50 transition-colors"
             >
-              Access
+              Get Started
             </Link>
           </div>
         </div>
       </nav>
 
       {/* ── Hero ───────────────────────────────────────────────────────────── */}
-      <section className="relative z-10 max-w-7xl mx-auto px-6 pt-16 pb-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 items-start">
-
-          {/* Left — headline */}
-          <div className="lg:pr-16 lg:border-r border-amber-900/30">
-            <p className="text-amber-600 text-xs tracking-[0.4em] uppercase mb-6">
-              &gt; INITIALIZING TRACKING SYSTEM...
-            </p>
-            <h1
-              className="text-5xl sm:text-7xl font-black leading-none mb-2 text-white"
-              style={{ letterSpacing: '-0.03em' }}
-            >
-              REAL
-            </h1>
-            <h1
-              className="text-5xl sm:text-7xl font-black leading-none mb-2"
-              style={{ letterSpacing: '-0.03em', color: '#f59e0b' }}
-            >
-              TIME.
-            </h1>
-            <h1
-              className="text-5xl sm:text-7xl font-black leading-none mb-10 text-white"
-              style={{ letterSpacing: '-0.03em', opacity: 0.3 }}
-            >
-              ALWAYS.
-            </h1>
-
-            <p className="text-amber-200/60 text-sm leading-relaxed max-w-sm mb-10 tracking-wide">
-              Live GPS tracking. Instant status updates. Every package, every agent,
-              every delivery — visible in real time on a live operations map.
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Link
-                to="/register"
-                className="group relative text-xs tracking-[0.3em] uppercase font-bold px-8 py-4 bg-amber-400 text-black hover:bg-amber-300 transition-all overflow-hidden"
-              >
-                <span className="relative z-10">Initialize Account</span>
-              </Link>
-              <Link
-                to="/login"
-                className="text-xs tracking-[0.3em] uppercase font-bold px-8 py-4 border border-amber-800 text-amber-500 hover:border-amber-500 hover:text-amber-300 transition-all"
-              >
-                Enter System →
-              </Link>
-            </div>
-
-            <p className="mt-5 text-amber-900 text-xs tracking-widest">
-              DEMO: admin@test.com / password123
-            </p>
-          </div>
-
-          {/* Right — live operations panel */}
-          <div className="lg:pl-16 mt-12 lg:mt-0">
-            <div className="border border-amber-900/50 bg-black/40">
-              {/* Panel header */}
-              <div className="border-b border-amber-900/50 px-4 py-2 flex items-center justify-between">
-                <span className="text-amber-600 text-xs tracking-widest uppercase">
-                  Live Feed // Active Deliveries
-                </span>
-                <div className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-                  <span className="text-green-400 text-xs">LIVE</span>
-                </div>
-              </div>
-
-              {/* Column headers */}
-              <div className="grid grid-cols-4 px-4 py-2 border-b border-amber-900/20">
-                {['ORDER_ID', 'STATUS', 'ROUTE', 'AGENT'].map(h => (
-                  <span key={h} className="text-amber-900 text-xs tracking-widest">{h}</span>
-                ))}
-              </div>
-
-              {/* Feed rows */}
-              {FEED_ITEMS.map((item, i) => (
-                <div
-                  key={item.id}
-                  className={`grid grid-cols-4 px-4 py-3 border-b border-amber-900/10 transition-all duration-500 ${
-                    i === activeRow ? 'bg-amber-400/5 border-l-2 border-l-amber-400' : ''
-                  }`}
-                >
-                  <span className="text-amber-300 text-xs font-bold">{item.id}</span>
-                  <span className={`text-xs font-bold ${STATUS_COLOR[item.status]}`}>
-                    {item.status}
-                  </span>
-                  <span className="text-amber-200/50 text-xs truncate">{item.city}</span>
-                  <span className="text-amber-200/40 text-xs truncate">{item.agent}</span>
-                </div>
-              ))}
-
-              {/* Terminal line */}
-              <div className="px-4 py-3 text-amber-900 text-xs">
-                &gt; <Typewriter text="Tracking 12,847 active deliveries across 28 cities..." delay={800} />
-                <Cursor />
-              </div>
-            </div>
-
-            {/* Stats row */}
-            <div className="grid grid-cols-3 border border-t-0 border-amber-900/50">
-              {[
-                { label: 'DELIVERIES', value: deliveries.toLocaleString() },
-                { label: 'AGENTS',     value: agents },
-                { label: 'CITIES',     value: cities },
-              ].map((s, i) => (
-                <div
-                  key={s.label}
-                  className={`px-4 py-4 ${i < 2 ? 'border-r border-amber-900/50' : ''}`}
-                >
-                  <p className="text-3xl font-black text-amber-400">{s.value}</p>
-                  <p className="text-amber-900 text-xs tracking-widest mt-1">{s.label}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Divider ────────────────────────────────────────────────────────── */}
-      <div className="relative z-10 max-w-7xl mx-auto px-6 py-8">
-        <div className="border-t border-amber-900/30 flex items-center gap-4">
-          <span className="text-amber-900 text-xs tracking-widest whitespace-nowrap">// SYSTEM MODULES</span>
-          <div className="flex-1 border-t border-amber-900/20" />
-        </div>
-      </div>
-
-      {/* ── Features — asymmetric grid ─────────────────────────────────────── */}
-      <section className="relative z-10 max-w-7xl mx-auto px-6 pb-16">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-px bg-amber-900/20">
-
-          {/* Large feature */}
-          <div className="md:col-span-5 bg-[#0a0a0a] p-8 border border-amber-900/20 hover:border-amber-700/40 transition-colors group">
-            <div className="text-4xl mb-6">📡</div>
-            <h3 className="text-white text-xl font-black tracking-tight mb-3 uppercase">
-              Socket.IO Real-Time
-            </h3>
-            <p className="text-amber-200/40 text-sm leading-relaxed">
-              Agent GPS coordinates broadcast every 5 seconds via WebSocket.
-              Zero polling. Zero refresh. The map marker moves as the agent moves.
-            </p>
-            <div className="mt-6 text-amber-900 text-xs tracking-widest">
-              LATENCY: <span className="text-green-400">&lt; 100ms</span>
-            </div>
-          </div>
-
-          {/* Two stacked */}
-          <div className="md:col-span-4 flex flex-col gap-px">
-            <div className="bg-[#0a0a0a] p-6 border border-amber-900/20 hover:border-amber-700/40 transition-colors flex-1">
-              <div className="text-2xl mb-4">🔐</div>
-              <h3 className="text-white font-black tracking-tight mb-2 uppercase text-sm">JWT Auth</h3>
-              <p className="text-amber-200/40 text-xs leading-relaxed">
-                3 roles. Protected routes. Rate-limited login. Tokens expire. Bcrypt hashed passwords.
-              </p>
-            </div>
-            <div className="bg-[#0a0a0a] p-6 border border-amber-900/20 hover:border-amber-700/40 transition-colors flex-1">
-              <div className="text-2xl mb-4">⚡</div>
-              <h3 className="text-white font-black tracking-tight mb-2 uppercase text-sm">Instant Status</h3>
-              <p className="text-amber-200/40 text-xs leading-relaxed">
-                Status changes emit socket events. Customer timeline updates without any page interaction.
-              </p>
-            </div>
-          </div>
-
-          {/* Tall right */}
-          <div className="md:col-span-3 bg-[#0a0a0a] p-8 border border-amber-900/20 hover:border-amber-700/40 transition-colors flex flex-col justify-between">
-            <div>
-              <div className="text-3xl mb-6">🗺️</div>
-              <h3 className="text-white font-black tracking-tight mb-3 uppercase">Leaflet Maps</h3>
-              <p className="text-amber-200/40 text-xs leading-relaxed">
-                OpenStreetMap tiles. No API key. Animated agent marker. ETA via Haversine formula.
-              </p>
-            </div>
-            <div className="mt-8 space-y-1">
-              {['Mumbai', 'Delhi', 'Bangalore', 'Pune', 'Hyderabad'].map(c => (
-                <div key={c} className="flex items-center gap-2">
-                  <div className="w-1 h-1 rounded-full bg-amber-400" />
-                  <span className="text-amber-900 text-xs">{c}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Bottom wide */}
-          <div className="md:col-span-7 bg-[#0a0a0a] p-8 border border-amber-900/20 hover:border-amber-700/40 transition-colors">
-            <div className="text-2xl mb-4">🛠️</div>
-            <h3 className="text-white font-black tracking-tight mb-3 uppercase">Admin Operations Center</h3>
-            <p className="text-amber-200/40 text-sm leading-relaxed mb-6">
-              Create orders, assign agents, monitor all deliveries in a live table. Stats update instantly as orders change state.
-            </p>
-            <div className="grid grid-cols-3 gap-4">
-              {['Create Orders', 'Assign Agents', 'Live Stats'].map(f => (
-                <div key={f} className="border border-amber-900/30 px-3 py-2 text-center">
-                  <span className="text-amber-600 text-xs tracking-widest uppercase">{f}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Bottom right */}
-          <div className="md:col-span-5 bg-[#0a0a0a] p-8 border border-amber-900/20 hover:border-amber-700/40 transition-colors">
-            <div className="text-2xl mb-4">🧪</div>
-            <h3 className="text-white font-black tracking-tight mb-3 uppercase">73 Cypress Tests</h3>
-            <p className="text-amber-200/40 text-sm leading-relaxed mb-4">
-              E2E tests across all 3 roles, all API endpoints, and all user flows. 100% pass rate.
-            </p>
-            <div className="flex items-center gap-3">
-              <div className="flex-1 bg-amber-900/20 h-1.5 rounded-full overflow-hidden">
-                <div className="h-full bg-green-400 rounded-full" style={{ width: '100%' }} />
-              </div>
-              <span className="text-green-400 text-xs font-bold">73/73</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Role access ────────────────────────────────────────────────────── */}
-      <section className="relative z-10 border-t border-amber-900/30 py-16 px-6">
-        <div className="max-w-7xl mx-auto">
-          <p className="text-amber-900 text-xs tracking-[0.4em] uppercase mb-10">
-            // ACCESS LEVELS
+      <section className="bg-gradient-to-br from-blue-50 to-blue-100 py-20 px-4">
+        <div className="max-w-5xl mx-auto text-center">
+          <span className="inline-block bg-blue-100 text-blue-700 text-xs font-semibold px-3 py-1 rounded-full mb-5 border border-blue-200">
+            Real-Time Package Delivery Tracking
+          </span>
+          <h1 className="text-4xl sm:text-6xl font-bold text-gray-900 leading-tight mb-5">
+            Track your package{' '}
+            <span className="text-blue-600">live on the map</span>
+          </h1>
+          <p className="text-lg text-gray-500 max-w-2xl mx-auto mb-8">
+            Watch your delivery agent move in real time. Instant status updates.
+            Full visibility from pickup to doorstep.
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                role: 'CUSTOMER',
-                clearance: 'LEVEL-1',
-                color: 'amber',
-                items: ['Track package live on map', 'View status timeline', 'Real-time ETA', 'Order history'],
-              },
-              {
-                role: 'AGENT',
-                clearance: 'LEVEL-2',
-                color: 'cyan',
-                items: ['View assigned deliveries', 'Broadcast GPS location', 'Update order status', 'Mobile optimized'],
-              },
-              {
-                role: 'ADMIN',
-                clearance: 'LEVEL-3',
-                color: 'orange',
-                items: ['Create & manage orders', 'Assign delivery agents', 'Monitor all deliveries', 'Live dashboard stats'],
-              },
-            ].map((r) => (
-              <div key={r.role} className="border border-amber-900/30 p-6 relative">
-                <div className="flex items-center justify-between mb-6">
-                  <span className="text-white font-black text-lg tracking-widest">{r.role}</span>
-                  <span className={`text-xs tracking-widest ${
-                    r.color === 'amber' ? 'text-amber-400' :
-                    r.color === 'cyan' ? 'text-cyan-400' : 'text-orange-400'
-                  }`}>
-                    {r.clearance}
-                  </span>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Link
+              to="/register"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3 rounded-xl text-base transition-colors shadow-sm"
+            >
+              Start Tracking Free
+            </Link>
+            <Link
+              to="/login"
+              className="bg-white hover:bg-gray-50 text-gray-700 font-semibold px-8 py-3 rounded-xl text-base border border-gray-200 transition-colors"
+            >
+              Sign In →
+            </Link>
+          </div>
+          <p className="mt-4 text-sm text-gray-400">
+            Demo: <span className="font-medium text-gray-500">admin@test.com</span> / <span className="font-medium text-gray-500">password123</span>
+          </p>
+        </div>
+
+        {/* Mock UI preview */}
+        <div className="max-w-4xl mx-auto mt-14 bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+          {/* Browser bar */}
+          <div className="bg-gray-50 border-b border-gray-100 px-4 py-3 flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-red-300" />
+            <div className="w-3 h-3 rounded-full bg-yellow-300" />
+            <div className="w-3 h-3 rounded-full bg-green-300" />
+            <div className="ml-3 bg-white border border-gray-200 rounded px-3 py-1 text-xs text-gray-400 flex-1 max-w-xs">
+              deliverease-jswk.vercel.app/track/DE-A8IKC9
+            </div>
+          </div>
+          <div className="p-6">
+            {/* Order header */}
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <p className="text-xs text-gray-400 font-mono">DE-A8IKC9</p>
+                <p className="font-bold text-gray-800 text-lg">Electronics — Laptop</p>
+              </div>
+              <span className="bg-orange-100 text-orange-700 text-xs font-semibold px-3 py-1 rounded-full">
+                In Transit
+              </span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {/* Fake map */}
+              <div className="sm:col-span-2 bg-blue-50 rounded-xl h-44 flex items-center justify-center relative overflow-hidden border border-blue-100">
+                <div
+                  className="absolute inset-0 opacity-10"
+                  style={{
+                    backgroundImage: 'repeating-linear-gradient(0deg,#3b82f6 0,#3b82f6 1px,transparent 0,transparent 40px),repeating-linear-gradient(90deg,#3b82f6 0,#3b82f6 1px,transparent 0,transparent 40px)',
+                  }}
+                />
+                <div className="relative z-10 text-center">
+                  <div className="text-3xl mb-1">🗺️</div>
+                  <p className="text-sm font-semibold text-blue-700">Live Map</p>
+                  <p className="text-xs text-blue-400 mt-0.5">Agent location updates every 5s</p>
                 </div>
-                <ul className="space-y-3">
-                  {r.items.map(item => (
-                    <li key={item} className="flex items-start gap-3 text-xs text-amber-200/50 tracking-wide">
-                      <span className={`mt-0.5 ${
-                        r.color === 'amber' ? 'text-amber-400' :
-                        r.color === 'cyan' ? 'text-cyan-400' : 'text-orange-400'
-                      }`}>▸</span>
-                      {item}
+                <div className="absolute top-1/3 left-1/2 w-3.5 h-3.5 bg-red-500 rounded-full border-2 border-white shadow animate-pulse" />
+                <div className="absolute bottom-6 right-10 text-xl">📍</div>
+              </div>
+              {/* Timeline */}
+              <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                <p className="text-xs font-semibold text-gray-500 mb-3">Delivery Progress</p>
+                <ol className="space-y-3">
+                  {['Order Placed', 'Agent Assigned', 'Picked Up', 'In Transit', 'Delivered'].map((s, i) => (
+                    <li key={s} className="flex items-center gap-2">
+                      <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
+                        i < 4 ? 'bg-blue-600' : 'bg-gray-200'
+                      } ${i === 3 ? 'ring-2 ring-blue-200' : ''}`} />
+                      <span className={`text-xs ${i < 4 ? 'text-gray-700 font-medium' : 'text-gray-300'}`}>{s}</span>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Stats ──────────────────────────────────────────────────────────── */}
+      <section className="bg-blue-600 py-12 px-4">
+        <div className="max-w-4xl mx-auto grid grid-cols-3 gap-6 text-center text-white">
+          {[
+            { value: deliveries.toLocaleString(), label: 'Deliveries Tracked' },
+            { value: agents,                      label: 'Active Agents' },
+            { value: cities,                      label: 'Cities Covered' },
+          ].map((s) => (
+            <div key={s.label}>
+              <p className="text-3xl sm:text-4xl font-bold">{s.value}</p>
+              <p className="text-blue-200 text-sm mt-1">{s.label}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── How it works ───────────────────────────────────────────────────── */}
+      <section className="py-20 px-4 bg-white">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-800">How it works</h2>
+            <p className="text-gray-500 mt-2">From order creation to doorstep delivery</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {STEPS.map((s, i) => (
+              <div key={s.title} className="relative">
+                {/* Connector line */}
+                {i < STEPS.length - 1 && (
+                  <div className="hidden lg:block absolute top-6 left-full w-full h-px bg-blue-100 z-0" style={{ width: 'calc(100% - 3rem)', left: '3.5rem' }} />
+                )}
+                <div className="bg-gray-50 rounded-2xl p-5 border border-gray-100 relative z-10">
+                  <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center text-xl mb-4">
+                    {s.icon}
+                  </div>
+                  <p className="text-xs font-semibold text-blue-600 mb-1">Step {i + 1}</p>
+                  <h3 className="font-bold text-gray-800 mb-2 text-sm">{s.title}</h3>
+                  <p className="text-gray-500 text-xs leading-relaxed">{s.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Features ───────────────────────────────────────────────────────── */}
+      <section className="py-20 px-4 bg-gray-50">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-800">Everything you need</h2>
+            <p className="text-gray-500 mt-2">Built for customers, agents, and admins</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {FEATURES.map((f) => (
+              <div key={f.title} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-xl mb-4">
+                  {f.icon}
+                </div>
+                <h3 className="font-bold text-gray-800 mb-2">{f.title}</h3>
+                <p className="text-gray-500 text-sm leading-relaxed">{f.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Roles ──────────────────────────────────────────────────────────── */}
+      <section className="py-20 px-4 bg-white">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-800">Built for every role</h2>
+            <p className="text-gray-500 mt-2">One platform, three dashboards</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            {[
+              { icon: '👤', role: 'Customer',       color: 'blue',   points: ['Track packages live on map', 'Real-time status timeline', 'ETA calculation', 'Full order history'] },
+              { icon: '🚴', role: 'Delivery Agent', color: 'green',  points: ['View assigned deliveries', 'Share live GPS location', 'Update order status', 'Mobile-friendly UI'] },
+              { icon: '🛠️', role: 'Admin',          color: 'purple', points: ['Create & manage orders', 'Assign delivery agents', 'Monitor all deliveries', 'Live stats dashboard'] },
+            ].map((r) => (
+              <div key={r.role} className={`rounded-2xl p-6 border ${
+                r.color === 'blue'   ? 'bg-blue-50 border-blue-100' :
+                r.color === 'green'  ? 'bg-green-50 border-green-100' :
+                                       'bg-purple-50 border-purple-100'
+              }`}>
+                <div className="text-3xl mb-3">{r.icon}</div>
+                <h3 className="font-bold text-gray-800 text-lg mb-4">{r.role}</h3>
+                <ul className="space-y-2 mb-6">
+                  {r.points.map((p) => (
+                    <li key={p} className="flex items-center gap-2 text-sm text-gray-600">
+                      <span className={`font-bold ${
+                        r.color === 'blue' ? 'text-blue-500' :
+                        r.color === 'green' ? 'text-green-500' : 'text-purple-500'
+                      }`}>✓</span>
+                      {p}
                     </li>
                   ))}
                 </ul>
                 <Link
                   to="/login"
-                  className={`mt-8 block text-center text-xs tracking-[0.3em] uppercase py-3 border transition-all ${
-                    r.color === 'amber' ? 'border-amber-800 text-amber-600 hover:border-amber-400 hover:text-amber-400' :
-                    r.color === 'cyan' ? 'border-cyan-900 text-cyan-700 hover:border-cyan-500 hover:text-cyan-400' :
-                    'border-orange-900 text-orange-700 hover:border-orange-500 hover:text-orange-400'
+                  className={`block text-center text-sm font-semibold py-2 rounded-lg transition-colors ${
+                    r.color === 'blue'   ? 'bg-blue-600 hover:bg-blue-700 text-white' :
+                    r.color === 'green'  ? 'bg-green-600 hover:bg-green-700 text-white' :
+                                           'bg-purple-600 hover:bg-purple-700 text-white'
                   }`}
                 >
-                  Request Access →
+                  Sign In →
                 </Link>
               </div>
             ))}
@@ -411,62 +269,48 @@ export default function Landing() {
       </section>
 
       {/* ── CTA ────────────────────────────────────────────────────────────── */}
-      <section className="relative z-10 border-t border-amber-900/30 py-20 px-6">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          <div>
-            <p className="text-amber-900 text-xs tracking-[0.4em] uppercase mb-4">
-              // READY TO DEPLOY
-            </p>
-            <h2 className="text-4xl sm:text-5xl font-black text-white leading-tight uppercase mb-6"
-              style={{ letterSpacing: '-0.02em' }}>
-              Your packages.<br />
-              <span className="text-amber-400">Always visible.</span>
-            </h2>
-            <p className="text-amber-200/40 text-sm leading-relaxed max-w-md">
-              Join the operations network. Real-time tracking, live maps, instant updates —
-              everything you need to run a modern delivery operation.
-            </p>
-          </div>
-          <div className="flex flex-col gap-4">
+      <section className="bg-gradient-to-br from-blue-600 to-blue-700 py-20 px-4">
+        <div className="max-w-2xl mx-auto text-center text-white">
+          <h2 className="text-3xl sm:text-4xl font-bold mb-4">
+            Ready to track your delivery?
+          </h2>
+          <p className="text-blue-200 text-lg mb-8">
+            Sign up free and start tracking in minutes.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link
               to="/register"
-              className="text-center text-sm tracking-[0.3em] uppercase font-black px-8 py-5 bg-amber-400 text-black hover:bg-amber-300 transition-all"
+              className="bg-white text-blue-600 font-bold px-8 py-3 rounded-xl hover:bg-blue-50 transition-colors"
             >
-              Initialize Account
+              Create Free Account
             </Link>
             <Link
               to="/login"
-              className="text-center text-sm tracking-[0.3em] uppercase font-bold px-8 py-5 border border-amber-900 text-amber-700 hover:border-amber-600 hover:text-amber-500 transition-all"
+              className="border-2 border-white/40 text-white font-semibold px-8 py-3 rounded-xl hover:bg-blue-600 transition-colors"
             >
-              Sign In to System
+              Sign In
             </Link>
-            <p className="text-center text-amber-900 text-xs tracking-widest">
-              DEMO CREDENTIALS AVAILABLE ON LOGIN PAGE
-            </p>
           </div>
         </div>
       </section>
 
       {/* ── Footer ─────────────────────────────────────────────────────────── */}
-      <footer className="relative z-10 border-t border-amber-900/30 px-6 py-8">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-            <span className="text-amber-900 text-xs tracking-[0.3em] uppercase">
-              DeliverEase // Operations Control v1.0
-            </span>
+      <footer className="bg-gray-800 text-gray-400 py-10 px-4">
+        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2 text-white font-bold text-lg">
+            <span>📦</span> DeliverEase
           </div>
-          <div className="flex items-center gap-6 text-xs tracking-widest text-amber-900">
-            <span>React · Node.js · Socket.IO · MongoDB · Leaflet</span>
-            <a
-              href="https://github.com/omkard0212/deliverease"
-              target="_blank"
-              rel="noreferrer"
-              className="hover:text-amber-600 transition-colors uppercase"
-            >
-              GitHub →
-            </a>
-          </div>
+          <p className="text-sm text-center">
+            React · Node.js · Socket.IO · MongoDB · Leaflet.js · Cypress
+          </p>
+          <a
+            href="https://github.com/omkard0212/deliverease"
+            target="_blank"
+            rel="noreferrer"
+            className="text-sm hover:text-white transition-colors"
+          >
+            GitHub →
+          </a>
         </div>
       </footer>
     </div>
