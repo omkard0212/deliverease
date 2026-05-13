@@ -18,6 +18,8 @@ const server = http.createServer(app);
 // Socket.IO setup — allow cross-origin from React (dev + prod)
 const allowedOrigins = [
   process.env.CLIENT_URL,
+  'https://deliverease-jswk.vercel.app',
+  'https://deliverease-one.vercel.app',
   'http://localhost:5173',
 ].filter(Boolean);
 
