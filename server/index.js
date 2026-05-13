@@ -15,10 +15,15 @@ const AgentLocation = require('./models/AgentLocation');
 const app = express();
 const server = http.createServer(app);
 
-// Socket.IO setup — allow cross-origin from the React dev server
+// Socket.IO setup — allow cross-origin from React (dev + prod)
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  'http://localhost:5173',
+].filter(Boolean);
+
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    origin: allowedOrigins,
     methods: ['GET', 'POST'],
   },
 });
@@ -27,7 +32,16 @@ const io = new Server(server, {
 app.set('io', io);
 
 // ── Middleware ────────────────────────────────────────────────────────────────
-app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:5173' }));
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, curl, Render health checks)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error(`CORS blocked: ${origin}`));
+    }
+  },
+}));
 app.use(express.json());
 
 // Rate limiter for auth routes — max 10 login attempts per 15 minutes per IP
