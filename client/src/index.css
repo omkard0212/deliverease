@@ -1,0 +1,12 @@
+/* Leaflet CSS must come before Tailwind directives */
+@import 'leaflet/dist/leaflet.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Ensure the map container fills its parent */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+}

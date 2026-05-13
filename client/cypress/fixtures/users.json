@@ -1,0 +1,26 @@
+{
+  "admin": {
+    "email": "admin@test.com",
+    "password": "password123",
+    "name": "Admin User",
+    "role": "admin"
+  },
+  "agent": {
+    "email": "agent1@test.com",
+    "password": "password123",
+    "name": "Ravi Kumar",
+    "role": "agent"
+  },
+  "customer": {
+    "email": "customer1@test.com",
+    "password": "password123",
+    "name": "Ananya Patel",
+    "role": "customer"
+  },
+  "newCustomer": {
+    "name": "Test User Cypress",
+    "email": "cypress_test@test.com",
+    "password": "cypress123",
+    "phone": "9876543210"
+  }
+}
