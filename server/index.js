@@ -46,11 +46,11 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Rate limiter for auth routes — max 10 login attempts per 15 minutes per IP
-// Prevents brute-force password attacks
+// Rate limiter for auth routes — max 50 login attempts per 15 minutes per IP
+// Prevents brute-force password attacks while allowing normal demo usage
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10,
+  max: 50,
   message: { message: 'Too many login attempts — please try again after 15 minutes' },
   standardHeaders: true,
   legacyHeaders: false,
